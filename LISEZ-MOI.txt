@@ -1,0 +1,8 @@
+KOFRE - APK Android
+===================
+1. Sur github.com : New repository > nom "kofre-android" > Public ou Privé > Create.
+2. "uploading an existing file" : glissez TOUT le contenu de ce dossier (y compris le dossier .github,
+   assets, www, package.json, capacitor.config.json). Commit changes.
+3. Onglet "Actions" : la construction démarre toute seule (5 à 10 minutes). Attendez la coche verte.
+4. Cliquez sur la ligne terminée > tout en bas "Artifacts" > KOFRE-apk (zip) > extrayez > app-debug.apk.
+5. Envoyez l'APK sur le téléphone, ouvrez-le, autorisez "installer des applications inconnues" quand Android le demande.

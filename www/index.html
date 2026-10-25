@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14151a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KOFRE">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<title>KOFRE</title>
+<style>
+:root{
+  --bg:#0f0f11; --carte:#1a1a1e; --bord:#2a2a30; --creme:#f3ede4; --encre:#111;
+  --texte:#f3ede4; --doux:#8a8a93; --vert:#3ecf8e; --rouge:#ff7a6b; --ambre:#f0b429;
+  --sc1:#6b655c; --sc2:#4a463f; --sc3:#5c574f;            /* textes sur fond « creme » */
+  --pv:#143a2a; --pa:#3d3112; --pr:#4a2220; --dg:#4a2a28;  /* puces, bouton danger */
+  --f-bg:#f3ede4; --f-txt:#111; --f-champ:#fff; --f-bord:#d9d2c6; --f-doux:#6b655c; --f-sec:#c9c1b3;
+  --f-inv:#111; --f-invt:#f3ede4; --f-echelle:#e8e1d5; --f-echt:#8a8478; --f-sep:#eee; --voile:rgba(0,0,0,.6);
+}
+/* Clair */
+:root[data-theme="clair"]{
+  --bg:#f4f0e8; --carte:#fff; --bord:#ddd5c8; --creme:#1b1b1f; --encre:#f6f1e8;
+  --texte:#1b1b1f; --doux:#6f6b64; --vert:#17804f; --rouge:#c93a2f; --ambre:#a86a00;
+  --sc1:#b9b4ab; --sc2:#d6d1c8; --sc3:#c4bfb6;
+  --pv:#d9f2e5; --pa:#fbecc8; --pr:#fbdcd8; --dg:#e8b9b3;
+  --f-bg:#fff; --f-champ:#f4f0e8; --f-bord:#ddd5c8; --voile:rgba(30,25,15,.35);
+  --f-echelle:#ece6da; --f-sep:#ece6da;
+}
+/* Nuit : noir pur (écrans OLED), blanc cassé chaud, peu éblouissant */
+:root[data-theme="nuit"]{
+  --bg:#000; --carte:#09090b; --bord:#1c1c21; --creme:#cfc3ae; --encre:#050505;
+  --texte:#cfc8bd; --doux:#767680; --vert:#4fb98a; --rouge:#e07a6f; --ambre:#d6a533;
+  --sc1:#6b655c; --sc2:#3d3a34; --sc3:#4a463f;
+  --pv:#0c2a1e; --pa:#2c240d; --pr:#341816; --dg:#3a2220;
+  --f-bg:#0d0d10; --f-txt:#cfc8bd; --f-champ:#000; --f-bord:#25252b; --f-doux:#8a8a93; --f-sec:#32323a;
+  --f-inv:#cfc3ae; --f-invt:#050505; --f-echelle:#1a1a1f; --f-echt:#767680; --f-sep:#1c1c21; --voile:rgba(0,0,0,.8);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--texte);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;font-size:15px}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font:inherit;color:var(--texte);background:var(--bg);border:1px solid var(--bord);border-radius:12px;padding:12px 14px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--doux)}
+.serif{font-family:Georgia,"Times New Roman",serif;font-weight:700}
+.hidden{display:none!important}
+.ecran{height:100%}
+
+/* boutons */
+.btn{background:var(--creme);color:var(--encre);border-radius:999px;padding:12px 22px;font-weight:600}
+.btn.sec{background:transparent;color:var(--texte);border:1px solid var(--bord)}
+.btn.danger{background:transparent;color:var(--rouge);border:1px solid var(--dg)}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.icone{width:40px;height:40px;border-radius:50%;background:var(--carte);border:1px solid var(--bord);display:grid;place-items:center}
+.icone:hover{border-color:var(--doux)}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* écrans config / verrou */
+.centre{height:100%;display:grid;place-items:center;padding:20px}
+.boite{width:100%;max-width:420px;background:var(--carte);border:1px solid var(--bord);border-radius:28px;padding:32px}
+.logo{width:56px;height:56px;border-radius:16px;background:var(--creme);color:var(--encre);display:grid;place-items:center;font-size:26px;margin-bottom:20px}
+.boite h1{font-size:28px;margin-bottom:6px}
+.boite p.sous{color:var(--doux);margin-bottom:20px;line-height:1.45}
+.boite label{display:block;color:var(--doux);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:14px 0 6px}
+.boite .btn{width:100%;margin-top:22px}
+.erreur{color:var(--rouge);margin-top:12px;min-height:20px;font-size:14px}
+
+/* application */
+#ecran-app{display:flex}
+.rail{width:76px;border-right:1px solid var(--bord);display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0}
+.logo i{display:block;width:72%;height:72%;background:var(--encre);-webkit-mask:url(data:image/png;base64,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) center/contain no-repeat;mask:url(data:image/png;base64,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) center/contain no-repeat}
+.rail .logo{width:44px;height:44px;font-size:20px;margin:0 0 10px;border-radius:14px}
+.rail button.nav{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:var(--doux)}
+.rail button.nav.actif{background:var(--creme);color:var(--encre)}
+.rail button.nav:hover{color:var(--texte)}
+.rail button.nav.actif:hover{color:var(--encre)}
+.rail .bas{margin-top:auto}
+main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.haut{display:flex;gap:12px;padding:18px 24px;border-bottom:1px solid var(--bord)}
+.haut input{border-radius:999px;padding:12px 18px}
+.haut .plus{width:46px;height:46px;border-radius:50%;background:var(--creme);color:var(--encre);font-size:26px;line-height:1;flex:none}
+.contenu{flex:1;overflow:auto;padding:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-content:start}
+.gauche,.droite{min-width:0}
+.stats{display:grid;gap:14px;margin-bottom:22px}
+.stat{background:var(--carte);border:1px solid var(--bord);border-radius:24px;padding:20px}
+.stat.creme{background:var(--creme);color:var(--encre);border-color:var(--creme)}
+.stat .tete{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--doux)}
+.stat.creme .tete{color:var(--sc1)}
+.stat .gros{font-size:46px;line-height:1.1;margin-top:14px}
+.stat .lib{color:var(--doux);margin-top:2px}
+.stat.creme .lib{color:var(--sc2)}
+.barre{height:8px;background:var(--bord);border-radius:99px;margin-top:14px;overflow:hidden}
+.barre>i{display:block;height:100%;border-radius:99px;background:var(--creme);transition:width .3s}
+.puce{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;margin-left:8px;vertical-align:middle}
+.puce.vert{background:var(--pv);color:var(--vert)}
+.puce.ambre{background:var(--pa);color:var(--ambre)}
+.puce.rouge{background:var(--pr);color:var(--rouge)}
+.lien{color:var(--texte);border-bottom:1px solid var(--doux);font-size:14px;margin-top:10px;display:inline-block}
+.titre-liste{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:600}
+.titre-liste small{color:var(--doux);font-weight:400}
+.item{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--carte);border:1px solid var(--bord);border-radius:20px;padding:14px;margin-bottom:10px}
+.item:hover{border-color:var(--doux)}
+.item.sel{background:var(--creme);color:var(--encre);border-color:var(--creme)}
+.item.sel .sub{color:var(--sc3)}
+.avatar{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-weight:700;font-size:18px;flex:none;background:var(--bg);color:var(--creme)}
+.item.sel .avatar{background:var(--encre);color:var(--creme)}
+.item .nom{font-weight:600}
+.item .sub{color:var(--doux);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .txt{min-width:0;flex:1}
+.pastille{width:10px;height:10px;border-radius:50%;flex:none}
+.vide{color:var(--doux);text-align:center;padding:30px 10px;border:1px dashed var(--bord);border-radius:20px}
+
+/* détails */
+.detail{background:var(--carte);border:1px solid var(--bord);border-radius:28px;padding:24px;position:sticky;top:0}
+.detail .entete{display:flex;gap:14px;align-items:center;margin-bottom:6px}
+.detail .avatar{width:64px;height:64px;font-size:26px;border-radius:18px;background:var(--creme);color:var(--encre)}
+.detail h2{font-size:24px}
+.chip{display:inline-block;border:1px solid var(--bord);border-radius:99px;padding:3px 12px;font-size:13px;color:var(--doux);margin-top:4px}
+.champ-titre{color:var(--doux);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px}
+.ligne{display:flex;gap:10px;align-items:center;background:var(--bg);border:1px solid var(--bord);border-radius:14px;padding:6px 6px 6px 16px}
+.ligne .val{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ligne .val.mono{font-family:Consolas,"Courier New",monospace}
+.notes{background:var(--bg);border:1px solid var(--bord);border-radius:14px;padding:14px 16px;line-height:1.5;white-space:pre-wrap}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.dates div{background:var(--bg);border:1px solid var(--bord);border-radius:14px;padding:12px 14px}
+.dates small{display:block;color:var(--doux);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.actions{display:flex;gap:10px;margin-top:20px}
+.actions .btn{flex:1}
+.pied{color:var(--doux);font-size:12px;text-align:center;margin-top:18px;line-height:1.5}
+.groupes{background:var(--carte);border:1px solid var(--bord);border-left:3px solid var(--ambre);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.5}
+.groupes b{display:block;margin-bottom:6px}
+.groupes .g{margin-top:6px;color:var(--doux)}
+.groupes .g span{color:var(--texte);font-weight:600}
+.conseils{color:var(--doux);font-size:13px;margin-top:8px;line-height:1.5}
+
+/* fenêtres */
+.voile{position:fixed;inset:0;background:var(--voile);display:grid;place-items:center;padding:16px;z-index:10}
+.fenetre{width:100%;max-width:460px;max-height:94vh;overflow:auto;background:var(--f-bg);color:var(--f-txt);border-radius:28px;padding:24px;border:1px solid var(--f-bord)}
+.fenetre h3{font-size:24px;margin-bottom:14px}
+.fenetre label{display:block;color:var(--f-doux);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:14px 0 6px}
+.fenetre input,.fenetre select,.fenetre textarea{background:var(--f-champ);color:var(--f-txt);border-color:var(--f-bord)}
+.fenetre .barre{background:var(--f-bord)}
+.fenetre .barre>i{background:var(--f-inv)}
+.fenetre .btn{background:var(--f-inv);color:var(--f-invt)}
+.fenetre .btn.sec{background:transparent;color:var(--f-txt);border:1px solid var(--f-sec)}
+.rangee{display:flex;gap:8px}
+.rangee .icone{background:var(--f-champ);border-color:var(--f-bord);color:var(--f-txt);flex:none;border-radius:12px;width:48px;height:auto}
+.gen-sortie{background:var(--f-inv);color:var(--f-invt);border-radius:16px;padding:16px;font-family:Consolas,"Courier New",monospace;word-break:break-all;margin-bottom:14px;min-height:52px}
+.opt{display:flex;justify-content:space-between;align-items:center;background:var(--f-inv);color:var(--f-invt);border-radius:14px;padding:12px 16px;margin-top:8px}
+.opt input{width:auto;accent-color:var(--f-invt)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--creme);color:var(--encre);padding:12px 20px;border-radius:99px;font-weight:600;z-index:20;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+
+.echelle{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:12px}
+.echelle span{font-size:11px;text-align:center;padding:7px 2px;border-radius:8px;background:var(--f-echelle);color:var(--f-echt)}
+.res{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--f-champ);line-height:1.5;font-size:14px;border-left:4px solid var(--f-bord)}
+.res:empty{display:none}
+.res.ok{border-left-color:#2a9d6f}
+.res.mauvais{border-left-color:#e5484d}
+.fuite{padding:8px 0;border-top:1px solid var(--f-sep)}
+.fuite:first-child{border-top:none}
+.fuite small{color:var(--f-doux)}
+.note{color:var(--f-doux);font-size:12px;line-height:1.5;margin-top:10px}
+.fenetre .lien{color:var(--f-txt);border-bottom-color:var(--f-echt)}
+.adr{display:block;width:100%;text-align:left;background:var(--f-champ);border:1px solid var(--f-bord);border-radius:12px;padding:10px 14px;margin-top:6px;color:var(--f-txt)}
+.adr:hover{border-color:var(--f-echt)}
+.theme{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme button{border:1px solid var(--f-sec);border-radius:14px;padding:12px 6px;font-weight:600;text-align:center}
+.theme button.on{background:var(--f-inv);color:var(--f-invt);border-color:var(--f-inv)}
+.theme small{display:block;font-weight:400;font-size:11px;opacity:.75;margin-top:2px}
+.fenetre details{border-top:1px solid var(--f-bord);padding:12px 0}
+.fenetre summary{cursor:pointer;font-weight:600}
+.fenetre details p,.fenetre details li{line-height:1.55;font-size:14px;margin-top:8px}
+.fenetre details ul{padding-left:18px}
+.outils{display:flex;gap:10px;margin-bottom:14px}
+.outils select{flex:1;min-width:0;border-radius:999px;padding:9px 14px;font-size:14px}
+.etoile{color:var(--doux);font-size:18px;line-height:1}
+.etoile.on{color:var(--ambre)}
+.code2fa{font-family:Consolas,"Courier New",monospace;font-size:28px;letter-spacing:.1em}
+
+@media (max-width:820px){
+  .contenu{grid-template-columns:1fr}
+  .detail{position:static}
+  .rail{width:60px}
+}
+
+
+/* ---------- téléphone ---------- */
+html,body{height:100%;overscroll-behavior:none}
+input,textarea,select{font-size:16px}  /* évite le zoom automatique sur iPhone */
+@media (max-width:820px){
+  body{font-size:16px}
+  #ecran-app{flex-direction:column-reverse;height:100dvh}
+  .ecran{height:100dvh}
+  .rail{width:100%;flex-direction:row;border-right:0;border-top:1px solid var(--bord);padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:6px;overflow-x:auto;flex:none;justify-content:flex-start;scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .rail .logo{display:none}
+  .rail button.nav{flex:none;width:48px;height:48px}
+  .rail .bas{margin-top:0;margin-left:0}
+  .haut{padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top))}
+  .contenu{padding:14px;gap:16px}
+  .stat .gros{font-size:38px}
+  .boite{padding:24px;border-radius:24px}
+  .detail{padding:18px;border-radius:22px}
+  .voile{padding:10px;align-items:end}
+  .fenetre{max-height:92dvh;padding:20px;border-radius:24px}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom));max-width:90vw;text-align:center}
+  .btn,.icone,.nav{min-height:44px}
+}
+
+/* ---------- animations discrètes ---------- */
+@keyframes fondu{from{opacity:0}to{opacity:1}}
+@keyframes montee{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+.ecran:not(.hidden) .boite,.ecran:not(.hidden) .centre>*{animation:montee .3s ease-out both}
+.voile:not(.hidden){animation:fondu .15s ease-out both}
+.voile:not(.hidden) .fenetre{animation:montee .22s ease-out both}
+.toast{animation:toast-in .2s ease-out both}
+.detail{animation:fondu .2s ease-out both}
+.item,.btn,.nav,.icone,.lien,.adr,.theme button{transition:background-color .15s,border-color .15s,color .15s,transform .12s,opacity .15s}
+.btn:active,.item:active,.theme button:active{transform:scale(.98)}
+.btn:not(:disabled):hover{transform:translateY(-1px)}
+.barre>i{transition:width .4s ease,background-color .4s ease}
+#d-2fa-barre{transition:width 1s linear}
+.theme-anim,.theme-anim *{transition:background-color .3s,color .3s,border-color .3s!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.fenetre .btn.danger{background:transparent;color:var(--rouge);border:1px solid var(--rouge)}
+</style>
+</head>
+<body>
+
+<!-- Création du coffre -->
+<div id="ecran-config" class="ecran hidden">
+  <div class="centre"><div class="boite">
+    <div class="logo" role="img" aria-label="KOFRE"><i></i></div>
+    <h1 class="serif">Créer votre coffre</h1>
+    <p class="sous">Choisissez un mot de passe maître. Il n'est enregistré nulle part : <b>si vous l'oubliez, vos données sont perdues</b>.</p>
+    <label for="cfg-mdp">Mot de passe maître (12 caractères minimum)</label>
+    <input id="cfg-mdp" type="password" autocomplete="off">
+    <div class="barre"><i id="cfg-force" style="width:0"></i></div>
+    <div class="conseils" id="cfg-conseils"></div>
+    <label for="cfg-mdp2">Confirmer</label>
+    <input id="cfg-mdp2" type="password" autocomplete="off">
+    <button class="lien" id="cfg-gen" style="margin-top:12px">Générer un mot de passe maître solide</button>
+    <div id="cfg-fiche" class="hidden">
+      <div class="conseils">Notez-le ou enregistrez une fiche de secours. <b>Elle contient le mot de passe en clair</b> : gardez-la sur une clé USB ou imprimée, pas sur cet ordinateur.</div>
+      <button class="lien" id="cfg-fiche-btn" style="margin-top:6px">Enregistrer une fiche de secours…</button>
+    </div>
+    <button class="btn" id="cfg-ok">Créer le coffre</button>
+    <div class="erreur" id="cfg-err"></div>
+    <button class="lien" id="cfg-restaurer" style="margin-top:6px">J'ai déjà une sauvegarde</button>
+  </div></div>
+</div>
+
+<!-- Verrouillage -->
+<div id="ecran-verrou" class="ecran hidden">
+  <div class="centre"><div class="boite">
+    <div class="logo" role="img" aria-label="KOFRE"><i></i></div>
+    <h1 class="serif">Coffre verrouillé</h1>
+    <p class="sous">Entrez votre mot de passe maître pour ouvrir le coffre.</p>
+    <label for="vrl-mdp">Mot de passe maître</label>
+    <input id="vrl-mdp" type="password" autocomplete="off">
+    <button class="btn" id="vrl-ok">Déverrouiller</button>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:18px">
+      <button class="lien" id="vrl-oubli" style="margin:0">Mot de passe oublié ?</button>
+      <button class="lien" id="vrl-restaurer" style="margin:0">Restaurer une sauvegarde</button>
+      <button class="lien" id="vrl-param" style="margin:0">Paramètres</button>
+    </div>
+    <div class="erreur" id="vrl-err"></div>
+  </div></div>
+</div>
+
+<!-- Mot de passe oublié -->
+<div id="ecran-oubli" class="ecran hidden">
+  <div class="centre"><div class="boite">
+    <div class="logo" role="img" aria-label="KOFRE"><i></i></div>
+    <h1 class="serif">Mot de passe oublié</h1>
+    <p class="sous">Saisissez la <b>clé de récupération</b> notée lors de la création de votre coffre, puis choisissez un nouveau mot de passe maître. Vos données sont conservées.</p>
+    <label for="ob-cle">Clé de récupération</label>
+    <input id="ob-cle" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" style="font-family:Consolas,'Courier New',monospace">
+    <label for="ob-mdp">Nouveau mot de passe maître (12 caractères minimum)</label>
+    <input id="ob-mdp" type="password" autocomplete="off">
+    <div class="barre"><i id="ob-force" style="width:0"></i></div>
+    <div class="conseils" id="ob-conseils"></div>
+    <label for="ob-mdp2">Confirmer</label>
+    <input id="ob-mdp2" type="password" autocomplete="off">
+    <button class="btn" id="ob-ok">Réinitialiser</button>
+    <button class="lien" id="ob-retour" style="margin-top:18px">← Retour</button>
+    <div class="erreur" id="ob-err"></div>
+  </div></div>
+</div>
+
+<!-- Clé de récupération (affichée une seule fois) -->
+<div id="ecran-cle" class="ecran hidden">
+  <div class="centre"><div class="boite">
+    <div class="logo" role="img" aria-label="KOFRE"><i></i></div>
+    <h1 class="serif">Clé de récupération</h1>
+    <p class="sous">Si vous oubliez votre mot de passe maître, cette clé est le <b>seul moyen</b> de récupérer vos données. <b>Notez-la sur papier</b> et gardez-la en lieu sûr, loin de cet ordinateur. Elle ne sera plus affichée.</p>
+    <div class="gen-sortie" id="cle-valeur" style="user-select:text;text-align:center;font-size:17px;letter-spacing:.04em"></div>
+    <button class="btn sec" id="cle-copier" style="margin-top:12px">Copier</button>
+    <label style="display:flex;gap:10px;align-items:center;text-transform:none;letter-spacing:0;font-size:14px;color:var(--texte);margin-top:18px">
+      <input type="checkbox" id="cle-ok" style="width:auto"> J'ai noté ma clé de récupération en lieu sûr
+    </label>
+    <button class="btn" id="cle-suite" disabled>Continuer</button>
+  </div></div>
+</div>
+
+<!-- Application -->
+<div id="ecran-app" class="ecran hidden">
+  <aside class="rail">
+    <div class="logo" role="img" aria-label="KOFRE"><i></i></div>
+    <button class="nav actif" id="nav-coffre" title="Coffre"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+    <button class="nav" id="nav-gen" title="Générateur"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></button>
+    <button class="nav" id="nav-rapport" title="Rapport de sécurité"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></button>
+    <button class="nav" id="nav-test" title="Testeur de mot de passe"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button>
+    <button class="nav" id="nav-mail" title="Fuites de données (e-mail)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></button>
+    <button class="nav" id="nav-secu" title="Sécurité du coffre (clé de récupération)"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L21 2M16 7l3 3M14 9l2 2"/></svg></button>
+    <button class="nav" id="nav-corb" title="Corbeille"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></button>
+    <button class="nav" id="nav-sauv" title="Sauvegarde et restauration"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg></button>
+    <button class="nav bas" id="nav-param" title="Paramètres"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></button>
+    <button class="nav" id="nav-verrou" title="Verrouiller"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+  </aside>
+  <main>
+    <div class="haut">
+      <input id="recherche" placeholder="Rechercher un identifiant…" autocomplete="off">
+      <button class="plus" id="btn-ajout" title="Ajouter">+</button>
+    </div>
+    <div class="contenu">
+      <div class="gauche">
+        <div class="stats">
+          <div class="stat creme">
+            <div class="tete"><span>Total</span></div>
+            <div class="gros serif" id="st-total">0</div>
+            <div class="lib">mots de passe sécurisés</div>
+          </div>
+          <div class="stat">
+            <div class="tete"><span>Score</span></div>
+            <div class="gros serif"><span id="st-score">0%</span><span class="puce vert" id="st-niveau">—</span></div>
+            <div class="lib">sécurité du coffre</div>
+            <div class="barre"><i id="st-barre" style="width:0"></i></div>
+          </div>
+          <div class="stat">
+            <div class="tete"><span>Rapport</span><span id="st-alerte" class="puce rouge hidden">Action requise</span></div>
+            <div class="gros serif" id="st-faibles">0</div>
+            <div class="lib" id="st-faibles-lib">mot de passe faible ou réutilisé</div>
+            <button class="lien hidden" id="st-voir">Voir le rapport →</button>
+          </div>
+        </div>
+        <div class="outils"><select id="filtre-cat" title="Filtrer"><option value="">Toutes les catégories</option><option value="__fav__">★ Favoris</option><option>Email</option><option>Banque</option><option>Réseaux sociaux</option><option>École</option><option>Autre</option></select><select id="tri" title="Trier"><option value="nom">Tri : A → Z</option><option value="recent">Tri : récents</option></select></div>
+        <div class="titre-liste"><span id="titre-liste">Identifiants</span><small id="filtre-actif"></small></div>
+        <div id="groupes"></div>
+        <div id="liste"></div>
+      </div>
+      <div class="droite"><div id="detail"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- Fenêtre : ajout / modification -->
+<div id="fen-entree" class="voile hidden"><div class="fenetre">
+  <h3 class="serif" id="fe-titre">Nouvel identifiant</h3>
+  <label for="fe-nom">Nom du service</label><input id="fe-nom" autocomplete="off">
+  <label for="fe-id">Identifiant / e-mail</label><input id="fe-id" autocomplete="off">
+  <label for="fe-site">Site web (facultatif)</label><input id="fe-site" autocomplete="off" placeholder="exemple.com">
+  <label for="fe-mdp">Mot de passe</label>
+  <div class="rangee">
+    <input id="fe-mdp" type="password" autocomplete="off">
+    <button class="icone" id="fe-oeil" title="Afficher"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    <button class="icone" id="fe-gen" title="Générer"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></button>
+  </div>
+  <div class="barre"><i id="fe-force" style="width:0"></i></div>
+  <div class="conseils" id="fe-conseils"></div>
+  <label for="fe-cat">Catégorie</label>
+  <select id="fe-cat"><option>Email</option><option>Banque</option><option>Réseaux sociaux</option><option>École</option><option>Autre</option></select>
+  <label for="fe-notes">Notes sécurisées</label><textarea id="fe-notes" rows="3"></textarea>
+  <label for="fe-2fa">Clé 2FA (facultatif)</label>
+  <input id="fe-2fa" type="password" autocomplete="off" placeholder="Clé secrète ou lien otpauth://">
+  <div class="note">Collez la clé secrète affichée par le site (à côté du QR code). Pour vos comptes les plus sensibles, gardez plutôt le 2FA sur un autre appareil : si le coffre est ouvert, mot de passe et code le seraient ensemble.</div>
+  <label style="display:flex;gap:10px;align-items:center;text-transform:none;letter-spacing:0;font-size:14px;color:var(--encre)"><input type="checkbox" id="fe-fav" style="width:auto"> Marquer comme favori ★</label>
+  <div class="erreur" id="fe-err"></div>
+  <div class="actions"><button class="btn sec" id="fe-annuler">Annuler</button><button class="btn" id="fe-ok">Enregistrer</button></div>
+</div></div>
+
+<!-- Fenêtre : générateur -->
+<div id="fen-gen" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Générateur KOFRE</h3>
+  <div class="gen-sortie" id="gn-sortie"></div>
+  <label for="gn-long">Longueur : <b id="gn-long-val">18</b> caractères</label>
+  <input id="gn-long" type="range" min="8" max="48" value="18">
+  <div class="opt"><span>Majuscules A-Z</span><input type="checkbox" id="gn-maj" checked></div>
+  <div class="opt"><span>Chiffres 0-9</span><input type="checkbox" id="gn-chi" checked></div>
+  <div class="opt"><span>Symboles !@#$%</span><input type="checkbox" id="gn-sym" checked></div>
+  <div class="actions">
+    <button class="btn sec" id="gn-regen">Régénérer</button>
+    <button class="btn" id="gn-copier">Copier et fermer</button>
+  </div>
+  <div class="actions"><button class="btn sec" id="gn-fermer">Fermer</button></div>
+  <div class="pied" style="color:#6b655c">Généré localement. Jamais envoyé.</div>
+</div></div>
+
+<!-- Fenêtre : paramètres -->
+<div id="fen-param" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Paramètres</h3>
+  <label>Affichage</label>
+  <div class="theme" id="pa-themes">
+    <button data-theme="clair">Clair<small>fond blanc cassé</small></button>
+    <button data-theme="sombre">Sombre<small>par défaut</small></button>
+    <button data-theme="nuit">Nuit<small>noir, doux pour les yeux</small></button>
+  </div>
+  <details id="pa-savoir"><summary>En savoir plus</summary>
+    <p class="note" style="font-size:13px">KOFRE est un gestionnaire de mots de passe local : vos comptes sont stockés dans un seul fichier chiffré sur cet ordinateur (<b>AES-256-GCM</b>), dont la clé est dérivée de votre mot de passe maître avec <b>Argon2id</b>.</p>
+    <p class="note" style="font-size:13px">Pas de compte, pas de serveur, pas de synchronisation. Le verrouillage est automatique après 5 minutes d'inactivité et le presse-papiers est vidé après 30 secondes.</p>
+    <p class="note" style="font-size:13px">Si vous perdez à la fois votre mot de passe maître et votre clé de récupération, personne ne peut ouvrir le coffre, pas même nous.</p>
+  </details>
+  <details id="pa-privacy"><summary>Politique de confidentialité</summary>
+    <p class="note" style="font-size:13px"><b>Données stockées.</b> Tout reste sur votre ordinateur, dans le dossier <code>.kofre</code> de votre profil. Rien n'est envoyé à l'auteur de KOFRE ni à un tiers, et il n'y a ni publicité, ni statistiques, ni pistage.</p>
+    <p class="note" style="font-size:13px"><b>Connexions internet.</b> Uniquement sur votre clic : (1) « tester la fuite » d'un mot de passe contacte haveibeenpwned.com en envoyant seulement les 5 premiers caractères de son empreinte SHA-1 : le mot de passe ne quitte jamais l'ordinateur ; (2) le bouton de vérification d'e-mail ouvre le site haveibeenpwned.com dans votre navigateur ; (3) le bouton « ouvrir le site » ouvre l'adresse que vous avez enregistrée.</p>
+    <p class="note" style="font-size:13px"><b>Sauvegardes.</b> Une sauvegarde est une copie chiffrée du coffre, que vous placez où vous voulez. Vous en êtes responsable.</p>
+    <p class="note" style="font-size:13px"><b>Réglages.</b> Seul le thème d'affichage est enregistré hors du coffre (fichier <code>reglages.json</code>). Désinstaller = supprimer le dossier <code>.kofre</code>.</p>
+  </details>
+  <div class="actions"><button class="btn sec" id="pa-fermer">Fermer</button></div>
+</div></div>
+
+<!-- Fenêtre : corbeille -->
+<div id="fen-corb" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Corbeille</h3>
+  <p class="note" style="margin-top:0">Les comptes supprimés restent ici 30 jours, puis disparaissent définitivement.</p>
+  <div id="corb-liste"></div>
+  <div class="erreur" id="corb-err"></div>
+  <div class="actions"><button class="btn danger hidden" id="corb-vider">Vider la corbeille</button><button class="btn sec" id="corb-fermer">Fermer</button></div>
+</div></div>
+
+<!-- Fenêtre : sauvegarde et restauration -->
+<div id="fen-sauv" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Sauvegarde et restauration</h3>
+  <div id="sv-export">
+    <p style="line-height:1.5">Une sauvegarde est une copie <b>chiffrée</b> de votre coffre. Elle s'ouvre avec le mot de passe maître que vous aviez <b>au moment de la sauvegarde</b> : refaites-en une après l'avoir changé. Gardez-la sur une clé USB ou un autre ordinateur.</p>
+    <div class="actions"><button class="btn" id="sv-sauver">Enregistrer une sauvegarde…</button></div>
+  </div>
+  <label for="sv-mdp" style="margin-top:22px">Restaurer · mot de passe maître de la sauvegarde</label>
+  <input id="sv-mdp" type="password" autocomplete="off">
+  <div class="actions"><button class="btn sec" id="sv-restaurer">Restaurer depuis un fichier…</button></div>
+  <div class="note">Si vous remplacez un coffre existant, il est conservé à côté dans un fichier .bak.</div>
+  <div id="sv-import">
+    <label style="margin-top:22px">Importer depuis un autre gestionnaire</label>
+    <p class="note" style="margin-top:4px">Exportez vos mots de passe en fichier CSV depuis Chrome, Edge, Firefox, Bitwarden, KeePass ou 1Password, puis choisissez ce fichier. <b>Il contient vos mots de passe en clair</b> : pensez à le supprimer de votre téléphone ensuite.</p>
+    <div class="actions"><button class="btn sec" id="sv-importer">Importer un fichier CSV…</button></div>
+  </div>
+  <div class="erreur" id="sv-err"></div>
+  <div class="actions"><button class="btn sec" id="sv-fermer">Fermer</button></div>
+</div></div>
+
+<!-- Fenêtre : sécurité du coffre -->
+<div id="fen-secu" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Sécurité du coffre</h3>
+  <label for="sc-actuel">Mot de passe maître actuel</label>
+  <input id="sc-actuel" type="password" autocomplete="off">
+  <div class="actions"><button class="btn sec" id="sc-newkey">Générer une nouvelle clé de récupération</button></div>
+  <div class="note">L'ancienne clé de récupération ne fonctionnera plus.</div>
+  <label for="sc-nouveau">Nouveau mot de passe maître (12 caractères minimum)</label>
+  <input id="sc-nouveau" type="password" autocomplete="off">
+  <label for="sc-nouveau2">Confirmer</label>
+  <input id="sc-nouveau2" type="password" autocomplete="off">
+  <div class="actions"><button class="btn" id="sc-change">Changer le mot de passe maître</button></div>
+  <div class="erreur" id="sc-err"></div>
+  <div class="actions"><button class="btn sec" id="sc-fermer">Fermer</button></div>
+</div></div>
+
+<!-- Fenêtre : testeur de mot de passe -->
+<div id="fen-test" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Testeur de mot de passe</h3>
+  <label for="te-mdp">Tapez un mot de passe à tester</label>
+  <div class="rangee">
+    <input id="te-mdp" type="password" autocomplete="off">
+    <button class="icone" id="te-oeil" title="Afficher"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+  </div>
+  <div class="barre"><i id="te-barre" style="width:0"></i></div>
+  <div class="echelle" id="te-echelle"><span>Très faible</span><span>Faible</span><span>Moyen</span><span>Fort</span><span>Très fort</span></div>
+  <div class="conseils" id="te-niveau" style="font-weight:600;color:var(--encre)"></div>
+  <div class="conseils" id="te-conseils"></div>
+  <div class="actions"><button class="btn sec" id="te-fuite">Vérifier si ce mot de passe a fuité</button></div>
+  <div class="res" id="te-fuite-res"></div>
+  <div class="note">Le test de robustesse se fait sur votre ordinateur. La vérification de fuite (facultative, internet) n'envoie que 5 caractères d'une empreinte : le mot de passe ne quitte jamais cet ordinateur.</div>
+  <div class="actions"><button class="btn" id="te-fermer">Fermer</button></div>
+</div></div>
+
+<!-- Fenêtre : fuites de données e-mail -->
+<div id="fen-mail" class="voile hidden"><div class="fenetre">
+  <h3 class="serif">Fuites de données (e-mail)</h3>
+  <p style="line-height:1.5">Le site gratuit <b>Have I Been Pwned</b> indique si une adresse e-mail apparaît dans des fuites de données connues. Il s'ouvre dans votre navigateur : vous y saisissez vous-même l'adresse. KOFRE n'envoie rien.</p>
+  <div id="ml-adresses"></div>
+  <div class="actions"><button class="btn" id="ml-site">Ouvrir Have I Been Pwned</button></div>
+  <div class="actions"><button class="btn sec" id="ml-fermer">Fermer</button></div>
+</div></div>
+
+<script src="lib/argon2.umd.min.js"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const DELAI_INACTIVITE = 5 * 60 * 1000;
+const DELAI_PRESSE_PAPIERS = 30 * 1000;
+
+let etat = { entrees: [], rapport: null, selection: null, filtre: "tous", recherche: "", cat: "", tri: "nom" };
+let minuteur2fa = null, jetonDetail = 0, sauvConfirmer = true;
+let editionId = null;
+let genCible = null; // null = copie ; "formulaire" = remplit le champ mot de passe
+let minuteurInactif = null;
+let minuteurPresse = null;
+
+/* ---------- utilitaires ---------- */
+function esc(t) {
+  return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+async function appel(nom, ...args) {
+  const r = await window.pywebview.api[nom](...args);
+  if (!r.ok && r.verrouille) { montrer("ecran-verrou"); }
+  return r;
+}
+const ECRANS = ["ecran-config", "ecran-verrou", "ecran-oubli", "ecran-cle", "ecran-app"];
+function montrer(ecran) {
+  for (const id of ECRANS) $(id).classList.toggle("hidden", id !== ecran);
+  if (ecran !== "ecran-app") clearTimeout(minuteurInactif);
+  if (ecran === "ecran-verrou") { $("vrl-mdp").value = ""; $("vrl-err").textContent = ""; $("vrl-mdp").focus(); }
+  if (ecran === "ecran-config") { $("cfg-mdp").focus(); }
+  if (ecran === "ecran-oubli") {
+    for (const c of ["ob-cle", "ob-mdp", "ob-mdp2"]) $(c).value = "";
+    $("ob-err").textContent = ""; $("ob-force").style.width = "0"; $("ob-conseils").textContent = "";
+    $("ob-cle").focus();
+  }
+}
+const COULEURS = { "Très faible": "#e5484d", "Faible": "#f76b15", "Moyen": "#f0b429", "Fort": "#8bd450", "Très fort": "#3ecf8e", "Bon": "#3ecf8e", "Vide": "#8a8a93" };
+function couleurNiveau(n) { return COULEURS[n] || "#8a8a93"; }
+function stylePuce(n) { const c = couleurNiveau(n); return "background:" + c + "33;color:" + c; }
+
+async function copier(texte) {
+  try { await navigator.clipboard.writeText(texte); }
+  catch (e) {
+    const z = document.createElement("textarea");
+    z.value = texte; document.body.appendChild(z); z.select();
+    try { document.execCommand("copy"); } catch (_) {}
+    z.remove();
+  }
+  toast("Copié. Effacement du presse-papiers dans 30 s");
+  clearTimeout(minuteurPresse);
+  minuteurPresse = setTimeout(async () => {
+    try { await navigator.clipboard.writeText(" "); } catch (_) {}
+  }, DELAI_PRESSE_PAPIERS);
+}
+
+/* ---------- verrouillage automatique ---------- */
+function reinitialiserInactivite() {
+  clearTimeout(minuteurInactif);
+  if ($("ecran-app").classList.contains("hidden")) return;
+  minuteurInactif = setTimeout(verrouiller, DELAI_INACTIVITE);
+}
+async function verrouiller() {
+  await appel("verrouiller");
+  etat = { entrees: [], rapport: null, selection: null, filtre: "tous", recherche: "", cat: "", tri: "nom" };
+  arreter2fa(); jetonDetail++;
+  $("detail").innerHTML = ""; $("liste").innerHTML = ""; $("groupes").innerHTML = "";
+  for (const f of ["fen-entree", "fen-gen", "fen-test", "fen-mail", "fen-secu", "fen-sauv", "fen-param", "fen-corb"]) $(f).classList.add("hidden");
+  for (const c of ["te-mdp", "fe-mdp", "fe-2fa", "sv-mdp", "sc-actuel", "sc-nouveau", "sc-nouveau2"]) $(c).value = "";
+  $("cle-valeur").textContent = "";
+  montrer("ecran-verrou");
+}
+["mousemove", "keydown", "click", "touchstart"].forEach((e) => document.addEventListener(e, reinitialiserInactivite, true));
+
+/* ---------- paramètres ---------- */
+function appliquerTheme(t, anime) {
+  if (anime) { document.documentElement.classList.add("theme-anim"); setTimeout(() => document.documentElement.classList.remove("theme-anim"), 400); }
+  document.documentElement.dataset.theme = t === "sombre" ? "" : t;
+  if (t === "sombre") document.documentElement.removeAttribute("data-theme");
+  for (const b of document.querySelectorAll("#pa-themes button")) b.classList.toggle("on", b.dataset.theme === t);
+}
+function ouvrirParametres() { $("fen-param").classList.remove("hidden"); }
+$("nav-param").addEventListener("click", ouvrirParametres);
+$("vrl-param").addEventListener("click", ouvrirParametres);
+$("pa-fermer").addEventListener("click", () => $("fen-param").classList.add("hidden"));
+$("pa-themes").addEventListener("click", async (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  appliquerTheme(b.dataset.theme, true);
+  await window.pywebview.api.definir_theme(b.dataset.theme);
+});
+
+/* ---------- démarrage ---------- */
+async function demarrer() {
+  const r = await appel("etat");
+  if (!r.ok) return;
+  appliquerTheme(r.data.theme || "sombre");
+  if (!r.data.existe) montrer("ecran-config");
+  else montrer("ecran-verrou");
+}
+window.addEventListener("pywebviewready", demarrer);
+
+/* ---------- création du coffre ---------- */
+let tempoForce = null;
+async function majForce(champ, barre, zoneConseils) {
+  clearTimeout(tempoForce);
+  tempoForce = setTimeout(async () => {
+    const mdp = $(champ).value;
+    if (!mdp) { $(barre).style.width = "0"; $(zoneConseils).textContent = ""; return; }
+    const r = await appel("evaluer", mdp);
+    if (!r.ok) return;
+    $(barre).style.width = r.data.score + "%";
+    $(barre).style.background = couleurNiveau(r.data.niveau);
+    $(zoneConseils).textContent = r.data.niveau + " · " + r.data.score + "%" + (r.data.conseils.length ? " — " + r.data.conseils[0] : "");
+  }, 150);
+}
+$("cfg-mdp").addEventListener("input", () => majForce("cfg-mdp", "cfg-force", "cfg-conseils"));
+$("cfg-gen").addEventListener("click", async () => {
+  const r = await appel("generer_maitre");
+  if (!r.ok) { $("cfg-err").textContent = r.erreur; return; }
+  $("cfg-mdp").value = $("cfg-mdp2").value = r.data;
+  $("cfg-mdp").type = "text"; $("cfg-mdp2").type = "text";
+  $("cfg-err").textContent = ""; $("cfg-fiche").classList.remove("hidden");
+  majForce("cfg-mdp", "cfg-force", "cfg-conseils");
+});
+$("cfg-fiche-btn").addEventListener("click", async () => {
+  const r = await appel("enregistrer_fiche", $("cfg-mdp").value);
+  if (!r.ok) { $("cfg-err").textContent = r.erreur; return; }
+  if (r.data) { $("cfg-err").textContent = ""; toast("Fiche enregistrée : copiez-la sur une clé USB, puis supprimez-la d'ici."); }
+});
+$("cfg-ok").addEventListener("click", async () => {
+  const a = $("cfg-mdp").value, b = $("cfg-mdp2").value;
+  if (a !== b) { $("cfg-err").textContent = "Les deux mots de passe ne correspondent pas."; return; }
+  const r = await appel("creer", a);
+  if (!r.ok) { $("cfg-err").textContent = r.erreur; return; }
+  $("cfg-mdp").value = $("cfg-mdp2").value = "";
+  $("cfg-mdp").type = $("cfg-mdp2").type = "password"; $("cfg-fiche").classList.add("hidden");
+  afficherCle(r.data);
+});
+
+/* ---------- déverrouillage ---------- */
+async function deverrouiller() {
+  const r = await appel("deverrouiller", $("vrl-mdp").value);
+  if (!r.ok) { $("vrl-err").textContent = r.erreur; $("vrl-mdp").select(); return; }
+  $("vrl-mdp").value = "";
+  if (r.data) afficherCle(r.data); // ancien coffre migré : nouvelle clé de récupération
+  else await ouvrirCoffre();
+}
+$("vrl-ok").addEventListener("click", deverrouiller);
+$("vrl-mdp").addEventListener("keydown", (e) => { if (e.key === "Enter") deverrouiller(); });
+$("cfg-mdp2").addEventListener("keydown", (e) => { if (e.key === "Enter") $("cfg-ok").click(); });
+
+async function ouvrirCoffre() {
+  montrer("ecran-app");
+  $("filtre-cat").value = etat.cat; $("tri").value = etat.tri; $("recherche").value = etat.recherche;
+  reinitialiserInactivite();
+  await rafraichir();
+}
+
+/* ---------- liste et statistiques ---------- */
+async function rafraichir() {
+  const r = await appel("lister");
+  if (!r.ok) return;
+  etat.entrees = r.data.entrees;
+  etat.rapport = r.data.rapport;
+  if (etat.selection && !etat.entrees.some((e) => e.id === etat.selection)) etat.selection = null;
+  if (!etat.selection && etat.entrees.length) etat.selection = etat.entrees[0].id;
+  dessinerStats();
+  dessinerListe();
+  await dessinerDetail();
+}
+
+function dessinerStats() {
+  const r = etat.rapport;
+  $("st-total").textContent = r.total;
+  $("st-score").textContent = r.total ? r.score + "%" : "—";
+  const niv = $("st-niveau");
+  niv.textContent = r.total ? r.niveau : "Vide";
+  niv.className = "puce";
+  niv.style.cssText = stylePuce(r.total ? r.niveau : "Vide");
+  $("st-barre").style.width = (r.total ? r.score : 0) + "%";
+  $("st-barre").style.background = couleurNiveau(r.niveau);
+  const problemes = new Set([...r.faibles, ...r.reutilises]);
+  $("st-faibles").textContent = problemes.size;
+  $("st-faibles-lib").textContent = problemes.size > 1 ? "mots de passe faibles ou réutilisés" : "mot de passe faible ou réutilisé";
+  $("st-alerte").classList.toggle("hidden", problemes.size === 0);
+  $("st-voir").classList.toggle("hidden", problemes.size === 0);
+}
+
+function listeFiltree() {
+  const r = etat.rapport;
+  const problemes = new Set([...r.faibles, ...r.reutilises]);
+  const q = etat.recherche.trim().toLowerCase();
+  const liste = etat.entrees.filter((e) => {
+    if (etat.filtre === "problemes" && !problemes.has(e.id)) return false;
+    if (etat.cat === "__fav__" && !e.favori) return false;
+    if (etat.cat && etat.cat !== "__fav__" && e.categorie !== etat.cat) return false;
+    if (!q) return true;
+    return (e.nom + " " + e.identifiant + " " + e.categorie).toLowerCase().includes(q);
+  });
+  // favoris d'abord, puis A → Z ou les plus récents
+  liste.sort((a, b) => (b.favori - a.favori) ||
+    (etat.tri === "recent" ? b.modifie - a.modifie : a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" })));
+  return liste;
+}
+
+function nomsDuGroupe(ids) {
+  return ids.map((id) => (etat.entrees.find((x) => x.id === id) || {}).nom).filter(Boolean);
+}
+function dessinerGroupes() {
+  const g = (etat.rapport && etat.rapport.groupes) || [];
+  if (etat.filtre !== "problemes" || !g.length) { $("groupes").innerHTML = ""; return; }
+  $("groupes").innerHTML = '<div class="groupes"><b>⚠ Mots de passe réutilisés</b>Si un seul de ces sites est piraté, les autres comptes du groupe le sont aussi. Changez le mot de passe de chacun.' +
+    g.map((ids) => '<div class="g"><span>' + nomsDuGroupe(ids).map(esc).join(" · ") + "</span> partagent le même mot de passe</div>").join("") + "</div>";
+}
+
+function dessinerListe() {
+  const items = listeFiltree();
+  const r = etat.rapport;
+  const faibles = new Set(r.faibles), reutil = new Set(r.reutilises);
+  $("titre-liste").textContent = "Identifiants • " + items.length;
+  $("filtre-actif").innerHTML = etat.filtre === "problemes" ? '<button class="lien" id="annuler-filtre" style="margin:0">Tout afficher</button>' : "";
+  dessinerGroupes();
+  if (etat.filtre === "problemes") $("annuler-filtre").addEventListener("click", () => { etat.filtre = "tous"; dessinerListe(); });
+  if (!items.length) {
+    $("liste").innerHTML = '<div class="vide">' + (etat.entrees.length ? "Aucun résultat." : "Votre coffre est vide. Cliquez sur + pour ajouter un identifiant.") + "</div>";
+    return;
+  }
+  $("liste").innerHTML = items.map((e) => {
+    const alerte = faibles.has(e.id) ? "var(--rouge)" : reutil.has(e.id) ? "var(--ambre)" : "transparent";
+    return '<button class="item' + (e.id === etat.selection ? " sel" : "") + '" data-id="' + esc(e.id) + '">' +
+      '<div class="avatar">' + esc(e.nom.charAt(0).toUpperCase()) + "</div>" +
+      '<div class="txt"><div class="nom">' + esc(e.nom) + '</div><div class="sub">' + esc(e.identifiant || e.categorie) + "</div></div>" +
+      (e.favori ? '<span class="etoile on" title="Favori">★</span>' : "") +
+      '<span class="pastille" style="background:' + alerte + '" title="' + (faibles.has(e.id) ? "Mot de passe faible" : reutil.has(e.id) ? "Mot de passe réutilisé" : "") + '"></span></button>';
+  }).join("");
+  document.querySelectorAll(".item").forEach((b) => b.addEventListener("click", async () => {
+    etat.selection = b.dataset.id; dessinerListe(); await dessinerDetail();
+    if (window.matchMedia("(max-width:820px)").matches) $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+}
+
+/* ---------- détails ---------- */
+const ICONE_COPIE = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const ICONE_OEIL = '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+async function dessinerDetail() {
+  const zone = $("detail");
+  const jeton = ++jetonDetail;  // ignore une réponse tardive si l'utilisateur a changé de fiche
+  arreter2fa();
+  if (!etat.selection) { zone.innerHTML = ""; return; }
+  const r = await appel("obtenir", etat.selection);
+  if (jeton !== jetonDetail) return;
+  if (!r.ok) { zone.innerHTML = ""; return; }
+  const e = r.data;
+  const date = (t) => new Date(t * 1000).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  const groupe = (etat.rapport.groupes || []).find((ids) => ids.includes(e.id));
+  const autres = groupe ? nomsDuGroupe(groupe.filter((id) => id !== e.id)) : [];
+  const reutilise = autres.length > 0;
+  zone.innerHTML =
+    '<div class="detail">' +
+    '<div class="entete"><div class="avatar">' + esc(e.nom.charAt(0).toUpperCase()) + "</div>" +
+    "<div><h2 class=\"serif\">" + esc(e.nom) + '</h2><span class="chip">' + esc(e.categorie) + "</span></div>" +
+    '<button class="icone" id="d-fav" title="' + (e.favori ? "Retirer des favoris" : "Ajouter aux favoris") + '" style="margin-left:auto"><span class="etoile' + (e.favori ? " on" : "") + '">' + (e.favori ? "★" : "☆") + "</span></button></div>" +
+    '<div class="champ-titre">Identifiant</div>' +
+    '<div class="ligne"><span class="val">' + esc(e.identifiant || "—") + '</span><button class="icone" id="d-copie-id" title="Copier">' + ICONE_COPIE + "</button></div>" +
+    (e.site ? '<div class="champ-titre">Site web</div><div class="ligne"><span class="val">' + esc(e.site) + '</span><button class="icone" id="d-site" title="Ouvrir dans le navigateur"><svg viewBox="0 0 24 24"><path d="M14 3h7v7M10 14L21 3M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg></button></div>' : "") +
+    '<div class="champ-titre">Mot de passe</div>' +
+    '<div class="ligne"><span class="val mono" id="d-mdp">' + "•".repeat(Math.min(e.mot_de_passe.length, 18)) + '</span>' +
+    '<button class="icone" id="d-oeil" title="Afficher">' + ICONE_OEIL + "</button>" +
+    '<button class="icone" id="d-copie-mdp" title="Copier" style="background:var(--creme);color:var(--encre)">' + ICONE_COPIE + "</button></div>" +
+    (e.totp ? '<div class="champ-titre">Code 2FA <span class="puce" id="d-2fa-tps" style="background:#2a2a30;color:var(--doux)"></span></div>' +
+      '<div class="ligne"><span class="val code2fa" id="d-2fa">······</span><button class="icone" id="d-copie-2fa" title="Copier" style="background:var(--creme);color:var(--encre)">' + ICONE_COPIE + "</button></div>" +
+      '<div class="barre"><i id="d-2fa-barre" style="width:0"></i></div>' : "") +
+    '<div class="champ-titre">Robustesse <span class="puce" style="' + stylePuce(e.force.niveau) + '">' + esc(e.force.niveau) + " · " + e.force.score + "%</span></div>" +
+    '<div class="barre"><i style="width:' + e.force.score + "%;background:" + couleurNiveau(e.force.niveau) + '"></i></div>' +
+    '<div class="conseils">' + (reutilise ? "⚠ Ce mot de passe est aussi utilisé pour : <b>" + autres.map(esc).join(", ") + "</b>. Utilisez un mot de passe différent pour chaque compte.<br>" : "") + esc(e.force.conseils.join(" ")) + "</div>" +
+    '<button class="lien" id="d-fuite">Vérifier si ce mot de passe a fuité</button><div class="conseils" id="d-fuite-res"></div>' +
+    (e.notes ? '<div class="champ-titre">Notes sécurisées</div><div class="notes">' + esc(e.notes) + "</div>" : "") +
+    '<div class="dates"><div><small>Créé</small>' + date(e.cree) + "</div><div><small>Modifié</small>" + date(e.modifie) + "</div></div>" +
+    '<div class="actions"><button class="btn" id="d-modif">Modifier</button><button class="btn danger" id="d-suppr">Supprimer</button></div>' +
+    '<div class="pied">Chiffré localement (AES-256-GCM).<br>Vos données restent sur cet ordinateur.</div></div>';
+
+  let visible = false;
+  $("d-oeil").addEventListener("click", () => {
+    visible = !visible;
+    $("d-mdp").textContent = visible ? e.mot_de_passe : "•".repeat(Math.min(e.mot_de_passe.length, 18));
+  });
+  $("d-copie-id").addEventListener("click", () => copier(e.identifiant));
+  $("d-copie-mdp").addEventListener("click", () => copier(e.mot_de_passe));
+  $("d-fav").addEventListener("click", async () => { const s = await appel("basculer_favori", e.id); if (s.ok) await rafraichir(); });
+  if (e.site) $("d-site").addEventListener("click", async () => {
+    const s = await appel("ouvrir_site", e.id);
+    toast(s.ok ? "Site ouvert dans votre navigateur" : s.erreur);
+  });
+  demarrer2fa(e);
+  $("d-fuite").addEventListener("click", async () => {
+    $("d-fuite-res").textContent = "Vérification en cours…";
+    afficherFuiteMdp("d-fuite-res", await appel("tester_fuite_mdp", e.mot_de_passe));
+  });
+  $("d-modif").addEventListener("click", () => ouvrirFormulaire(e));
+  $("d-suppr").addEventListener("click", async () => {
+    if (!confirm("Mettre « " + e.nom + " » à la corbeille ?\nVous pourrez le restaurer pendant 30 jours.")) return;
+    const s = await appel("supprimer", e.id);
+    if (s.ok) { etat.selection = null; toast("Mis à la corbeille"); await rafraichir(); }
+  });
+}
+
+/* ---------- formulaire ajout / modification ---------- */
+function ouvrirFormulaire(e) {
+  editionId = e ? e.id : null;
+  $("fe-titre").textContent = e ? "Modifier l'identifiant" : "Nouvel identifiant";
+  $("fe-nom").value = e ? e.nom : "";
+  $("fe-id").value = e ? e.identifiant : "";
+  $("fe-mdp").value = e ? e.mot_de_passe : "";
+  $("fe-mdp").type = "password";
+  $("fe-cat").value = e ? e.categorie : "Email";
+  $("fe-notes").value = e ? e.notes : "";
+  $("fe-site").value = e ? (e.site || "") : "";
+  $("fe-2fa").value = e ? (e.totp || "") : "";
+  $("fe-fav").checked = e ? !!e.favori : false;
+  $("fe-err").textContent = "";
+  $("fen-entree").classList.remove("hidden");
+  majForce("fe-mdp", "fe-force", "fe-conseils");
+  $("fe-nom").focus();
+}
+function fermerFormulaire() { $("fen-entree").classList.add("hidden"); $("fe-mdp").value = ""; $("fe-2fa").value = ""; }
+$("btn-ajout").addEventListener("click", () => ouvrirFormulaire(null));
+$("fe-annuler").addEventListener("click", fermerFormulaire);
+$("fe-mdp").addEventListener("input", () => majForce("fe-mdp", "fe-force", "fe-conseils"));
+$("fe-oeil").addEventListener("click", () => { $("fe-mdp").type = $("fe-mdp").type === "password" ? "text" : "password"; });
+$("fe-gen").addEventListener("click", async () => {
+  const r = await appel("generer", 18, true, true, true);
+  if (r.ok) { $("fe-mdp").value = r.data; $("fe-mdp").type = "text"; majForce("fe-mdp", "fe-force", "fe-conseils"); }
+});
+$("fe-ok").addEventListener("click", async () => {
+  const champs = [$("fe-nom").value, $("fe-id").value, $("fe-mdp").value, $("fe-cat").value, $("fe-notes").value,
+    $("fe-site").value, $("fe-fav").checked, $("fe-2fa").value];
+  const dup = await appel("comptes_meme_mdp", champs[2], editionId || "");
+  if (dup.ok && dup.data.length &&
+      !confirm("Ce mot de passe est déjà utilisé pour : " + dup.data.join(", ") + ".\n\nSi l'un de ces sites est piraté, ce compte le sera aussi.\nL'enregistrer quand même ?")) return;
+  const r = editionId ? await appel("modifier", editionId, ...champs) : await appel("ajouter", ...champs);
+  if (!r.ok) { $("fe-err").textContent = r.erreur; return; }
+  if (!editionId) etat.selection = r.data;
+  fermerFormulaire();
+  toast(editionId ? "Modifié" : "Ajouté");
+  await rafraichir();
+});
+
+/* ---------- générateur ---------- */
+async function genererNouveau() {
+  const r = await appel("generer", +$("gn-long").value, $("gn-maj").checked, $("gn-chi").checked, $("gn-sym").checked);
+  if (r.ok) $("gn-sortie").textContent = r.data;
+}
+function ouvrirGenerateur() { $("fen-gen").classList.remove("hidden"); genererNouveau(); }
+$("nav-gen").addEventListener("click", ouvrirGenerateur);
+$("gn-long").addEventListener("input", () => { $("gn-long-val").textContent = $("gn-long").value; genererNouveau(); });
+["gn-maj", "gn-chi", "gn-sym"].forEach((i) => $(i).addEventListener("change", genererNouveau));
+$("gn-regen").addEventListener("click", genererNouveau);
+$("gn-copier").addEventListener("click", async () => { await copier($("gn-sortie").textContent); $("fen-gen").classList.add("hidden"); });
+$("gn-fermer").addEventListener("click", () => { $("gn-sortie").textContent = ""; $("fen-gen").classList.add("hidden"); });
+
+/* ---------- vérification de fuite (mot de passe) ---------- */
+function afficherFuiteMdp(zone, r) {
+  const z = $(zone);
+  z.className = z.className.replace(/\s*(ok|mauvais)/g, "");
+  if (!r.ok) { z.textContent = r.erreur; z.style.color = ""; return; }
+  if (r.data > 0) {
+    z.textContent = "⚠ Ce mot de passe apparaît " + r.data.toLocaleString("fr-FR") + " fois dans des fuites connues. Ne l'utilisez pas.";
+    z.style.color = "#e5484d"; z.className += " mauvais";
+  } else {
+    z.textContent = "✓ Non trouvé dans les fuites connues.";
+    z.style.color = "#2a9d6f"; z.className += " ok";
+  }
+}
+
+/* ---------- testeur de mot de passe ---------- */
+let tempoTest = null;
+function reinitialiserEchelle() {
+  document.querySelectorAll("#te-echelle span").forEach((s) => { s.style.background = ""; s.style.color = ""; s.style.fontWeight = ""; });
+}
+async function evaluerTest() {
+  const mdp = $("te-mdp").value;
+  $("te-fuite-res").textContent = ""; $("te-fuite-res").className = "res"; $("te-fuite-res").style.color = "";
+  reinitialiserEchelle();
+  if (!mdp) { $("te-barre").style.width = "0"; $("te-niveau").textContent = ""; $("te-conseils").textContent = ""; return; }
+  const r = await appel("evaluer", mdp);
+  if (!r.ok || $("te-mdp").value !== mdp) return;
+  const c = couleurNiveau(r.data.niveau);
+  $("te-barre").style.width = r.data.score + "%";
+  $("te-barre").style.background = c;
+  $("te-niveau").textContent = r.data.niveau + " · " + r.data.score + "%";
+  $("te-conseils").textContent = r.data.conseils.length ? r.data.conseils.join(" ") : "Aucun conseil : très bon mot de passe.";
+  document.querySelectorAll("#te-echelle span").forEach((s) => {
+    if (s.textContent === r.data.niveau) { s.style.background = c; s.style.color = "#111"; s.style.fontWeight = "700"; }
+  });
+}
+function fermerTest() { $("te-mdp").value = ""; reinitialiserEchelle(); $("fen-test").classList.add("hidden"); }
+$("nav-test").addEventListener("click", () => { $("te-mdp").type = "password"; evaluerTest(); $("fen-test").classList.remove("hidden"); $("te-mdp").focus(); });
+$("te-mdp").addEventListener("input", () => { clearTimeout(tempoTest); tempoTest = setTimeout(evaluerTest, 120); });
+$("te-oeil").addEventListener("click", () => { $("te-mdp").type = $("te-mdp").type === "password" ? "text" : "password"; });
+$("te-fuite").addEventListener("click", async () => {
+  const mdp = $("te-mdp").value;
+  if (!mdp) return;
+  $("te-fuite-res").className = "res"; $("te-fuite-res").style.color = "";
+  $("te-fuite-res").textContent = "Vérification en cours…";
+  afficherFuiteMdp("te-fuite-res", await appel("tester_fuite_mdp", mdp));
+});
+$("te-fermer").addEventListener("click", fermerTest);
+
+/* ---------- fuites de données (e-mail) ---------- */
+$("nav-mail").addEventListener("click", async () => {
+  $("ml-adresses").innerHTML = "";
+  $("fen-mail").classList.remove("hidden");
+  const r = await appel("emails");
+  if (!r.ok || !r.data.length) return;
+  $("ml-adresses").innerHTML = '<div class="note" style="margin:0">Adresses de votre coffre : cliquez pour copier, puis collez-la sur le site.</div>' +
+    r.data.map((x) => '<button class="adr" data-mail="' + esc(x) + '">' + esc(x) + "</button>").join("");
+  document.querySelectorAll(".adr").forEach((b) => b.addEventListener("click", () => copier(b.dataset.mail)));
+});
+$("ml-site").addEventListener("click", async () => {
+  const r = await appel("ouvrir_hibp");
+  toast(r.ok ? "Site ouvert dans votre navigateur" : "Impossible d'ouvrir le navigateur");
+});
+$("ml-fermer").addEventListener("click", () => $("fen-mail").classList.add("hidden"));
+
+/* ---------- clé de récupération ---------- */
+function afficherCle(cle) {
+  $("cle-valeur").textContent = cle;
+  $("cle-ok").checked = false;
+  $("cle-suite").disabled = true;
+  montrer("ecran-cle");
+}
+$("cle-ok").addEventListener("change", () => { $("cle-suite").disabled = !$("cle-ok").checked; });
+$("cle-copier").addEventListener("click", () => copier($("cle-valeur").textContent));
+$("cle-suite").addEventListener("click", async () => { $("cle-valeur").textContent = ""; await ouvrirCoffre(); });
+
+/* ---------- mot de passe oublié ---------- */
+$("vrl-oubli").addEventListener("click", () => montrer("ecran-oubli"));
+$("ob-retour").addEventListener("click", () => montrer("ecran-verrou"));
+$("ob-mdp").addEventListener("input", () => majForce("ob-mdp", "ob-force", "ob-conseils"));
+$("ob-ok").addEventListener("click", async () => {
+  if ($("ob-mdp").value !== $("ob-mdp2").value) { $("ob-err").textContent = "Les deux mots de passe ne correspondent pas."; return; }
+  $("ob-err").textContent = "Vérification en cours…";
+  const r = await appel("recuperer", $("ob-cle").value, $("ob-mdp").value);
+  if (!r.ok) { $("ob-err").textContent = r.erreur; return; }
+  for (const c of ["ob-cle", "ob-mdp", "ob-mdp2"]) $(c).value = "";
+  afficherCle(r.data); // la clé de récupération est renouvelée
+});
+
+/* ---------- sécurité du coffre ---------- */
+$("nav-secu").addEventListener("click", () => {
+  for (const c of ["sc-actuel", "sc-nouveau", "sc-nouveau2"]) $(c).value = "";
+  $("sc-err").textContent = "";
+  $("fen-secu").classList.remove("hidden");
+  $("sc-actuel").focus();
+});
+$("sc-fermer").addEventListener("click", () => {
+  for (const c of ["sc-actuel", "sc-nouveau", "sc-nouveau2"]) $(c).value = "";
+  $("fen-secu").classList.add("hidden");
+});
+$("sc-newkey").addEventListener("click", async () => {
+  $("sc-err").textContent = "Vérification en cours…";
+  const r = await appel("nouvelle_cle", $("sc-actuel").value);
+  if (!r.ok) { $("sc-err").textContent = r.erreur; return; }
+  $("sc-actuel").value = "";
+  $("fen-secu").classList.add("hidden");
+  afficherCle(r.data);
+});
+$("sc-change").addEventListener("click", async () => {
+  if ($("sc-nouveau").value !== $("sc-nouveau2").value) { $("sc-err").textContent = "Les deux mots de passe ne correspondent pas."; return; }
+  $("sc-err").textContent = "Vérification en cours…";
+  const r = await appel("changer_mdp_maitre", $("sc-actuel").value, $("sc-nouveau").value);
+  if (!r.ok) { $("sc-err").textContent = r.erreur; return; }
+  for (const c of ["sc-actuel", "sc-nouveau", "sc-nouveau2"]) $(c).value = "";
+  $("fen-secu").classList.add("hidden");
+  toast("Mot de passe maître changé");
+});
+
+/* ---------- filtres et tri ---------- */
+$("filtre-cat").addEventListener("change", (e) => { etat.cat = e.target.value; dessinerListe(); });
+$("tri").addEventListener("change", (e) => { etat.tri = e.target.value; dessinerListe(); });
+
+/* ---------- codes 2FA ---------- */
+function arreter2fa() { clearInterval(minuteur2fa); minuteur2fa = null; }
+function formaterCode(c) {
+  return c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c.length === 8 ? c.slice(0, 4) + " " + c.slice(4) : c;
+}
+async function demarrer2fa(e) {
+  arreter2fa();
+  if (!e.totp) return;
+  const mien = jetonDetail;
+  let code = "", fin = 0, periode = 30, charge = false;
+  async function charger() {
+    const r = await appel("code_2fa", e.id);
+    if (mien !== jetonDetail) return;
+    if (!r.ok) { if (!r.verrouille) $("d-2fa").textContent = "Clé 2FA invalide"; arreter2fa(); return; }
+    code = r.data.code; periode = r.data.periode; fin = Date.now() + r.data.reste * 1000; charge = true;
+    $("d-2fa").textContent = formaterCode(code);
+  }
+  function tic() {
+    if (mien !== jetonDetail) { arreter2fa(); return; }
+    if (!charge) return;
+    const reste = Math.max(0, Math.ceil((fin - Date.now()) / 1000));
+    $("d-2fa-tps").textContent = reste + " s";
+    $("d-2fa-barre").style.width = (reste / periode * 100) + "%";
+    if (reste === 0) { charge = false; charger(); }  // nouveau code à chaque période
+  }
+  $("d-copie-2fa").addEventListener("click", () => { if (code) copier(code); });
+  await charger();
+  if (mien !== jetonDetail || !charge) return;
+  tic();
+  minuteur2fa = setInterval(tic, 1000);
+}
+
+/* ---------- sauvegarde et restauration ---------- */
+function ouvrirSauvegarde(avecExport, confirmer) {
+  sauvConfirmer = confirmer;
+  $("sv-export").classList.toggle("hidden", !avecExport);
+  $("sv-import").classList.toggle("hidden", !avecExport);  // l'import suppose un coffre ouvert
+  $("sv-mdp").value = ""; $("sv-err").textContent = "";
+  $("fen-sauv").classList.remove("hidden");
+}
+function fermerSauvegarde() { $("sv-mdp").value = ""; $("fen-sauv").classList.add("hidden"); }
+$("nav-sauv").addEventListener("click", () => ouvrirSauvegarde(true, true));
+$("cfg-restaurer").addEventListener("click", () => ouvrirSauvegarde(false, false));  // aucun coffre à remplacer
+$("vrl-restaurer").addEventListener("click", () => ouvrirSauvegarde(false, true));
+$("sv-fermer").addEventListener("click", fermerSauvegarde);
+$("sv-sauver").addEventListener("click", async () => {
+  $("sv-err").textContent = "";
+  const r = await appel("sauvegarder");
+  if (!r.ok) { $("sv-err").textContent = r.erreur; return; }
+  if (r.data) toast("Sauvegarde enregistrée");  // null = boîte de dialogue annulée
+});
+$("sv-restaurer").addEventListener("click", async () => {
+  if (!$("sv-mdp").value) { $("sv-err").textContent = "Saisissez d'abord le mot de passe maître de la sauvegarde."; return; }
+  if (sauvConfirmer && !confirm("Restaurer remplace votre coffre actuel (une copie .bak est conservée à côté). Continuer ?")) return;
+  $("sv-err").textContent = "";
+  const r = await appel("restaurer", $("sv-mdp").value);
+  if (!r.ok) { $("sv-err").textContent = r.erreur; return; }
+  if (!r.data) return;  // boîte de dialogue annulée
+  fermerSauvegarde();
+  if (r.data.cle) afficherCle(r.data.cle);  // ancien format migré : nouvelle clé de récupération
+  else { toast("Sauvegarde restaurée"); await ouvrirCoffre(); }
+});
+
+/* ---------- import CSV ---------- */
+$("sv-importer").addEventListener("click", async () => {
+  $("sv-err").textContent = "";
+  const r = await appel("importer_csv");
+  if (!r.ok) { $("sv-err").textContent = r.erreur; return; }
+  if (!r.data) return;  // boîte de dialogue annulée
+  const d = r.data;
+  let msg = d.importes + " compte" + (d.importes > 1 ? "s importés" : " importé");
+  if (d.doublons) msg += " · " + d.doublons + " déjà présent" + (d.doublons > 1 ? "s" : "");
+  if (d.ignores) msg += " · " + d.ignores + " ignoré" + (d.ignores > 1 ? "s" : "") + " (sans mot de passe)";
+  if (d.sites_invalides) msg += " · " + d.sites_invalides + " adresse(s) de site invalide(s) non reprise(s)";
+  if (d.totp_invalides) msg += " · " + d.totp_invalides + " clé(s) 2FA invalide(s) non reprise(s)";
+  fermerSauvegarde();
+  await rafraichir();
+  toast(msg);
+  if (d.importes && d.peut_supprimer === false) alert("Import terminé.\n\nLe fichier « " + d.fichier + " » contient vos mots de passe en clair : supprimez-le de votre téléphone (application Fichiers, Téléchargements).");
+  if (d.importes && d.peut_supprimer !== false && confirm("Import terminé.\n\nLe fichier « " + d.fichier + " » contient vos mots de passe en clair.\nLe supprimer maintenant ?")) {
+    const s = await appel("supprimer_fichier_import");
+    toast(s.ok ? "Fichier supprimé" : s.erreur);
+  }
+});
+
+/* ---------- corbeille ---------- */
+async function ouvrirCorbeille() {
+  $("corb-err").textContent = "";
+  const r = await appel("corbeille");
+  if (!r.ok) { $("corb-err").textContent = r.erreur; return; }
+  $("fen-corb").classList.remove("hidden");
+  $("corb-vider").classList.toggle("hidden", r.data.length === 0);
+  $("corb-liste").innerHTML = r.data.length ? r.data.map((e) =>
+    '<div class="fuite"><b>' + esc(e.nom) + "</b><br><small>" + esc(e.identifiant || e.categorie) + " · encore " + e.reste + " jour" + (e.reste > 1 ? "s" : "") + "</small>" +
+    '<div class="actions" style="margin-top:8px"><button class="btn sec" data-restaurer="' + esc(e.id) + '">Restaurer</button><button class="btn danger" data-effacer="' + esc(e.id) + '">Supprimer</button></div></div>'
+  ).join("") : '<div class="vide">La corbeille est vide.</div>';
+}
+$("nav-corb").addEventListener("click", ouvrirCorbeille);
+$("corb-fermer").addEventListener("click", () => $("fen-corb").classList.add("hidden"));
+$("corb-liste").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.restaurer) {
+    const r = await appel("restaurer_corbeille", b.dataset.restaurer);
+    if (!r.ok) { $("corb-err").textContent = r.erreur; return; }
+    toast("Compte restauré"); await rafraichir(); await ouvrirCorbeille();
+  } else if (b.dataset.effacer) {
+    if (!confirm("Supprimer ce compte pour toujours ? C'est irréversible.")) return;
+    const r = await appel("supprimer_definitif", b.dataset.effacer);
+    if (!r.ok) { $("corb-err").textContent = r.erreur; return; }
+    await ouvrirCorbeille();
+  }
+});
+$("corb-vider").addEventListener("click", async () => {
+  if (!confirm("Vider la corbeille ? Les comptes seront supprimés pour toujours.")) return;
+  const r = await appel("vider_corbeille");
+  if (!r.ok) { $("corb-err").textContent = r.erreur; return; }
+  await ouvrirCorbeille();
+});
+
+/* ---------- navigation ---------- */
+$("recherche").addEventListener("input", (e) => { etat.recherche = e.target.value; dessinerListe(); });
+$("nav-verrou").addEventListener("click", verrouiller);
+$("nav-coffre").addEventListener("click", () => { etat.filtre = "tous"; etat.cat = ""; $("filtre-cat").value = ""; $("recherche").value = ""; etat.recherche = ""; dessinerListe(); });
+function voirRapport() { etat.filtre = "problemes"; dessinerListe(); }
+$("nav-rapport").addEventListener("click", voirRapport);
+$("st-voir").addEventListener("click", voirRapport);
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
